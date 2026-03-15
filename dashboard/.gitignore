@@ -1,0 +1,23 @@
+# Node modules
+node_modules/
+
+# Next.js build output
+.next/
+out/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env*
+
+# Mac
+.DS_Store
+
+# VS Code
+.vscode/
+
+# Misc
+*.log
