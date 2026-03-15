@@ -21,6 +21,11 @@ class WorkerNode:
     cpuCores: int
     ramGb: float
     gpuAvailable: bool
+    gpuVendor: Optional[str]
+    gpuBackend: Optional[str]
+    gpuRuntimeVersion: Optional[str]
+    gpuCount: int
+    gpuDevices: list[dict]
     websocket: WebSocket
     isBusy: bool = False
     connectedAt: datetime = field(
@@ -33,6 +38,11 @@ class WorkerNode:
             "cpuCores": self.cpuCores,
             "ramGb": self.ramGb,
             "gpuAvailable": self.gpuAvailable,
+            "gpuVendor": self.gpuVendor,
+            "gpuBackend": self.gpuBackend,
+            "gpuRuntimeVersion": self.gpuRuntimeVersion,
+            "gpuCount": self.gpuCount,
+            "gpuDevices": self.gpuDevices,
             "isBusy": self.isBusy,
             "connectedAt": self.connectedAt.isoformat(),
         }
@@ -51,6 +61,11 @@ class NodeRegistry:
         cpuCores: int,
         ramGb: float,
         gpuAvailable: bool,
+        gpuVendor: Optional[str],
+        gpuBackend: Optional[str],
+        gpuRuntimeVersion: Optional[str],
+        gpuCount: int,
+        gpuDevices: list[dict],
         websocket: WebSocket,
     ) -> WorkerNode:
         async with self._lock:
@@ -59,12 +74,24 @@ class NodeRegistry:
                 cpuCores=cpuCores,
                 ramGb=ramGb,
                 gpuAvailable=gpuAvailable,
+                gpuVendor=gpuVendor,
+                gpuBackend=gpuBackend,
+                gpuRuntimeVersion=gpuRuntimeVersion,
+                gpuCount=gpuCount,
+                gpuDevices=gpuDevices,
                 websocket=websocket,
             )
             self._nodes[nodeId] = node
             logger.info(
-                "Node registered: %s  CPU=%d  RAM=%.1fGB  GPU=%s",
-                nodeId, cpuCores, ramGb, gpuAvailable,
+                "Node registered: %s  CPU=%d  RAM=%.1fGB  GPU=%s  vendor=%s  backend=%s  runtime=%s  devices=%d",
+                nodeId,
+                cpuCores,
+                ramGb,
+                gpuAvailable,
+                gpuVendor,
+                gpuBackend,
+                gpuRuntimeVersion,
+                gpuCount,
             )
             return node
 

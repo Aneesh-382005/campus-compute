@@ -52,6 +52,11 @@ class RegisterMessage(BaseModel):
     cpuCores: int
     ramGb: float
     gpuAvailable: bool
+    gpuVendor: Optional[str] = None
+    gpuBackend: Optional[str] = None
+    gpuRuntimeVersion: Optional[str] = None
+    gpuCount: Optional[int] = 0
+    gpuDevices: list[dict] = Field(default_factory=list)
 
 
 class TaskResultMessage(BaseModel):
@@ -204,6 +209,11 @@ async def handleRegister(data: dict, websocket: WebSocket) -> str:
         cpuCores=msg.cpuCores,
         ramGb=msg.ramGb,
         gpuAvailable=msg.gpuAvailable,
+        gpuVendor=msg.gpuVendor,
+        gpuBackend=msg.gpuBackend,
+        gpuRuntimeVersion=msg.gpuRuntimeVersion,
+        gpuCount=msg.gpuCount or len(msg.gpuDevices),
+        gpuDevices=msg.gpuDevices,
         websocket=websocket,
     )
     await websocket.send_text(json.dumps({
@@ -212,8 +222,15 @@ async def handleRegister(data: dict, websocket: WebSocket) -> str:
         "nodeId": msg.nodeId,
     }))
     logger.info(
-        "Worker registered: %s  CPU=%d  RAM=%.1fGB  GPU=%s",
-        msg.nodeId, msg.cpuCores, msg.ramGb, msg.gpuAvailable,
+        "Worker registered: %s  CPU=%d  RAM=%.1fGB  GPU=%s  vendor=%s  backend=%s  runtime=%s  devices=%d",
+        msg.nodeId,
+        msg.cpuCores,
+        msg.ramGb,
+        msg.gpuAvailable,
+        msg.gpuVendor,
+        msg.gpuBackend,
+        msg.gpuRuntimeVersion,
+        msg.gpuCount or len(msg.gpuDevices),
     )
     await scheduler.dispatchPending()
     await broadcastClusterState()
@@ -259,4 +276,4 @@ async def broadcastClusterState() -> None:
             await client.send_text(stateJson)
         except Exception:
             dead.add(client)
-    dashboardClients -= dead
+    dashboardClients.difference_update(dead)
